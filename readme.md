@@ -3,36 +3,40 @@ lotter-mgmt-api is a SpringBoot Application that implements a simple lottery sys
 It facilitates creation of lottery tickets with n lines , check the status of lines on a ticket and updation of tickets with n
 additional lines. Once the status of a ticket has been checked, it forbids further updation on the ticket.
 
-## This API exposes the below methods
-1. Create a lottery ticket with userId and lottery lines. Each line consists of 3 numbers(0, 1 or 2).
-2. Get list of lottery tickets
-3. Get a lottery ticket based on Id.
-4. Update a lottery ticket using Id. Lottery lines can be amended with n additional lines 
-5. Update/Check the status of a lottery ticket with the Id. Once the status of a ticket has been checked it will not be possible to update the ticket.Lines are sorted in the outcome based on the sortDirection provided.
+## This API exposes the below end points.
+* /ticket(POST)     - Create a lottery ticket with userId and lottery lines. Each line consists of 3 numbers(0, 1 or 2).
+* /ticket(GET)      - Get list of lottery tickets
+* /ticket/{id}(GET) - Get a lottery ticket based on Id.
+* /ticket/{id}(PUT) - Update a lottery ticket using Id. Lottery lines can be amended with n additional lines 
+* /status/{id}(PUT) - Update/Check the status of a lottery ticket with the Id. Once the status of a ticket has been checked it will not be possible to update the ticket.Lines are sorted based on the sort direction provided.
+* /swagger-ui.html  - Swagger docs
 
-Lottery resuts are computed using the below rule:
 ## Lottery Rules
-You have a series of lines on a ticket with 3 numbers, each of which has a value of 0, 1, or 2. For each ticket if the sum of the values on a line is 2, the result for that line is 10.
-Otherwise if they are all the same, the result is 5. Otherwise so long as both 2nd and 3rd numbers are different from the 1st, the result is 1. Otherwise the result is 0.
+Lottery results are computed using the below rule:
+* You have a series of lines on a ticket with 3 numbers, each of which has a value of 0, 1, or 2. 
+* For each ticket if the sum of the values on a line is 2, the result for that line is 10.
+* Otherwise if they are all the same, the result is 5. 
+* Otherwise so long as both 2nd and 3rd numbers are different from the 1st, the result is 1. 
+* Otherwise the result is 0.
 
-######## Swagger Docs can be found in /swagger-ui.html
+## Swagger Docs can be accessed from `/swagger-ui.html` once the application is up and running
 
 ## Design of the Mongo DB Table
 ******************
 LotteryTicket:
 ******************
-#######id  - Id of the Lottery Ticket. Auto Generated Primary Key
-#######userId - User Id who created the ticket
-#######createdDateTime - Datetime when the ticket was created
-#######updatedDateTime - Datetime when the ticket was updated last
-#######List<Line> - List of Lottery Lines
-#######statusEnquired - Flag that checks the status of the lottery ticket
+* id                   - Id of the Lottery Ticket. Auto Generated Primary Key
+* userId               - User Id who created the ticket
+* createdDateTime      - Datetime when the ticket was created
+* updatedDateTime      - Datetime when the ticket was updated last
+* List<Line>           - List  of Lottery Lines
+* statusEnquired       - Flag that checks the status of the lottery ticket
 
 ******************
 Line:
 ******************
-#######number - Lottery numbers of individual lines
-#######result - Result of the above number
+* number - Lottery numbers of individual lines
+* result - Result of the above number
 
 
 ## List of end points
@@ -41,14 +45,14 @@ Once the application is running, navigate to http://localhost:8080/swagger-ui.ht
 
 ## Package Structure
 All the java classes are organized in com.example.lotterymgmtapi under the respective sub packages.
-#######LotteryTicket.java and Line.java  - represents the DB Model
-#######LotteryTicketRequest.java and LotteryTicketResponse.java - represents the request and response entities. They are different from the DB Model because the status/result field should not be sent back in the response except for the status check PUT request.
-#######LotteryRepository.java - DAO Class which uses Springboot's inbuilt Repository implementation for common DB operations.
-#######LotteryService.java - service layer that handles the repository calls
-#######LotteryController.java - controller layer that handles the calls to service methods.
-#######LotteryMgmtApplication - Main Springboot Application
-#######SwaggerConfig - handles the swagger 2 configuration
-#######SecurityConfig - handles the security configuration
+* LotteryTicket.java and Line.java                         - represents the DB Model
+* LotteryTicketRequest.java and LotteryTicketResponse.java - represents the request and response entities. They are different from the DB Model because the status/result field should not be sent back in the response except for the status check PUT request.
+* LotteryRepository.java                                   - DAO Class which uses Springboot's inbuilt Repository implementation for common DB operations.
+* LotteryService.java                                      - service layer that handles the repository calls
+* LotteryController.java                                   - controller layer that handles the calls to service methods.
+* LotteryMgmtApplication                                   - Main Springboot Application
+* SwaggerConfig                                            - handles the swagger 2 configuration
+* SecurityConfig                                           - handles the security configuration
 *************************
 All test classes are under the src/test/java folder under the respective sub packages.
 *************************
@@ -65,20 +69,22 @@ For building and running the application you need:
 - [Maven 3](https://maven.apache.org)
 
 ## Running the application locally
+- The application requires environment variable, SPRING_DATA_MONGODB_URI to be set for the DB interactions.
 
-1. Set the environment variable SPRING_DATA_MONGODB_URI to point to a running MongoDB Instance.
-
+- To run the application locally , execute the below command from the command line editor , once you are in the project root directory:
 ```shell
-export SPRING_DATA_MONGODB_URI=mongodb+srv://<username>:<password>@<cluster URL>/<database_name>?retryWrites=true&w=majority
+mvn clean install package
+java -jar target/lottery-mgmt-api-0.0.1-SNAPSHOT.jar --SPRING_DATA_MONGODB_URI=<URL of the Running MongoDB instance >
+Example : java -jar target/lottery-mgmt-api-0.0.1-SNAPSHOT.jar --SPRING_DATA_MONGODB_URI=mongodb://127.0.0.1:27017/lottery_db
 ```
-2. There are several ways to run a Spring Boot application on your local machine. One way is to execute the `main` method in the `com.example.lotterymgmtapi.LotteryMgmtApiApplication` class from your IDE(Do not forget to set the ENV variable as mentioned above).
-
-Alternatively you can use the [Spring Boot Maven plugin](https://docs.spring.io/spring-boot/docs/current/reference/html/build-tool-plugins-maven-plugin.html) like so:
-
-```shell
-mvn spring-boot:run
+- To execute the application in IDE , execute the `main` method in the `com.example.lotterymgmtapi.LotteryMgmtApiApplication` class.
+Before running the main method , specify the environment variable `SPRING_DATA_MONGODB_URI` in the run configuration.
+Example:
 ```
-
+SPRING_DATA_MONGODB_URI=mongodb+srv://<username>:<password>@<cluster URL>/<database_name>?retryWrites=true&w=majority(if you are running MongoDB in a cluster)
+or
+SPRING_DATA_MONGODB_URI=mongodb://127.0.0.1:27017/lottery_db(If MongoDB is running locally)
+```
 Once the application is up and running, issue requests to http://localhost:8080/
 
 ## Sample request and reponse
@@ -238,7 +244,7 @@ Sample JSON Response - Retrieve status of ticket - PUT - http://localhost:8080/l
      }
      
 ## Known caveats
-1. The API is not guarded using Authentication mechanisms. This has to be implemenetd in the future
+* The API is not secured using Authentication mechanisms. This has to be implemented in the future
 
-2. The API does not use pagination for listing lottery tickets. This has to be implemented in the future. 
+* The API does not use pagination for listing lottery tickets. This has to be implemented in the future. 
 

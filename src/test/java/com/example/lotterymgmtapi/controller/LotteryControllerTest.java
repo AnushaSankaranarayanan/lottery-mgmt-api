@@ -10,10 +10,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.util.Base64Utils;
+
+import java.nio.file.AccessDeniedException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
@@ -23,12 +27,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.nio.file.AccessDeniedException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.NoSuchElementException;
 
 @WebMvcTest(LotteryController.class)
 public class LotteryControllerTest {
@@ -53,7 +51,7 @@ public class LotteryControllerTest {
         response.setCreatedDateTime(new Date());
         response.setUpdatedDateTime(new Date());
         response.setId(id);
-        response.setLines( List.of("000","012"));
+        response.setLines(List.of("000", "012"));
         response.setStatusEnquired(statusEnquired);
         response.setUserId(userId);
 
@@ -80,7 +78,7 @@ public class LotteryControllerTest {
         response.setCreatedDateTime(new Date());
         response.setUpdatedDateTime(new Date());
         response.setId(id);
-        response.setLines( List.of("000","012"));
+        response.setLines(List.of("000", "012"));
         response.setStatusEnquired(statusEnquired);
         response.setUserId(userId);
 
@@ -111,7 +109,7 @@ public class LotteryControllerTest {
         response.setCreatedDateTime(new Date());
         response.setUpdatedDateTime(new Date());
         response.setId(id);
-        response.setLines( List.of("000","012"));
+        response.setLines(List.of("000", "012"));
         response.setStatusEnquired(statusEnquired);
         response.setUserId(userId);
 
@@ -131,7 +129,7 @@ public class LotteryControllerTest {
         boolean statusEnquired = false;
 
         LotteryTicketRequest request = new LotteryTicketRequest();
-        request.setLines(List.of("000", "012" , "001" , "002"));
+        request.setLines(List.of("000", "012", "001", "002"));
         request.setUserId(userId);
 
         this.mockMvc.perform(post("/lotteryapi/v1/ticket/")
@@ -164,6 +162,7 @@ public class LotteryControllerTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
+
     @Test
     public void updateTicketValidScenario() throws Exception {
         String id = "id1";
@@ -178,12 +177,12 @@ public class LotteryControllerTest {
         response.setCreatedDateTime(new Date());
         response.setUpdatedDateTime(new Date());
         response.setId(id);
-        response.setLines( List.of("000","012"));
+        response.setLines(List.of("000", "012"));
         response.setStatusEnquired(statusEnquired);
         response.setUserId(userId);
 
-        when(lotteryService.updateTicket(id,request)).thenReturn(response);
-        this.mockMvc.perform(put("/lotteryapi/v1/ticket/" +id)
+        when(lotteryService.updateTicket(id, request)).thenReturn(response);
+        this.mockMvc.perform(put("/lotteryapi/v1/ticket/" + id)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(request))
                 .accept(MediaType.APPLICATION_JSON))
@@ -197,10 +196,10 @@ public class LotteryControllerTest {
         boolean statusEnquired = false;
 
         LotteryTicketRequest request = new LotteryTicketRequest();
-        request.setLines(List.of("000", "012" , "001" , "002"));
+        request.setLines(List.of("000", "012", "001", "002"));
         request.setUserId(userId);
 
-        this.mockMvc.perform(put("/lotteryapi/v1/ticket/" +id)
+        this.mockMvc.perform(put("/lotteryapi/v1/ticket/" + id)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(request))
                 .accept(MediaType.APPLICATION_JSON))
@@ -216,7 +215,7 @@ public class LotteryControllerTest {
         LotteryTicketRequest request = new LotteryTicketRequest();
         request.setUserId(userId);
 
-        this.mockMvc.perform(put("/lotteryapi/v1/ticket/" +id)
+        this.mockMvc.perform(put("/lotteryapi/v1/ticket/" + id)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(request))
                 .accept(MediaType.APPLICATION_JSON))
@@ -224,7 +223,7 @@ public class LotteryControllerTest {
 
         request.setLines(List.of("0000", "012222"));
 
-        this.mockMvc.perform(put("/lotteryapi/v1/ticket/" +id)
+        this.mockMvc.perform(put("/lotteryapi/v1/ticket/" + id)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(request))
                 .accept(MediaType.APPLICATION_JSON))
@@ -241,13 +240,14 @@ public class LotteryControllerTest {
         request.setUserId(userId);
 
 
-        when(lotteryService.updateTicket(anyString(),any(LotteryTicketRequest.class))).thenThrow(new NoSuchElementException());
-        this.mockMvc.perform(put("/lotteryapi/v1/ticket/" +id)
+        when(lotteryService.updateTicket(anyString(), any(LotteryTicketRequest.class))).thenThrow(new NoSuchElementException());
+        this.mockMvc.perform(put("/lotteryapi/v1/ticket/" + id)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(request))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
+
     @Test
     public void updateTicketIdDifferentUser() throws Exception {
         String id = "id1";
@@ -258,13 +258,14 @@ public class LotteryControllerTest {
         request.setUserId(userId);
 
 
-        when(lotteryService.updateTicket(anyString(),any(LotteryTicketRequest.class))).thenThrow(new AccessDeniedException("Access denied"));
-        this.mockMvc.perform(put("/lotteryapi/v1/ticket/" +id)
+        when(lotteryService.updateTicket(anyString(), any(LotteryTicketRequest.class))).thenThrow(new AccessDeniedException("Access denied"));
+        this.mockMvc.perform(put("/lotteryapi/v1/ticket/" + id)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(request))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
     }
+
     @Test
     public void updateTicketStatusValidScenario() throws Exception {
         String id = "id1";
@@ -279,14 +280,14 @@ public class LotteryControllerTest {
         response.setCreatedDateTime(new Date());
         response.setUpdatedDateTime(new Date());
         response.setId(id);
-        response.setLines( List.of(
+        response.setLines(List.of(
                 new Line("000", 5),
                 new Line("012", 1)));
         response.setStatusEnquired(statusEnquired);
         response.setUserId(userId);
 
-        when(lotteryService.updateTicketStatus(id,null,request)).thenReturn(response);
-        this.mockMvc.perform(put("/lotteryapi/v1/status/" +id)
+        when(lotteryService.updateTicketStatus(id, null, request)).thenReturn(response);
+        this.mockMvc.perform(put("/lotteryapi/v1/status/" + id)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(request))
                 .accept(MediaType.APPLICATION_JSON))
@@ -300,10 +301,10 @@ public class LotteryControllerTest {
         boolean statusEnquired = false;
 
         LotteryTicketRequest request = new LotteryTicketRequest();
-        request.setLines(List.of("000", "012" , "001" , "002"));
+        request.setLines(List.of("000", "012", "001", "002"));
         request.setUserId(userId);
 
-        this.mockMvc.perform(put("/lotteryapi/v1/status/" +id)
+        this.mockMvc.perform(put("/lotteryapi/v1/status/" + id)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(request))
                 .accept(MediaType.APPLICATION_JSON))
@@ -321,14 +322,15 @@ public class LotteryControllerTest {
         request.setUserId(userId);
 
 
-        when(lotteryService.updateTicketStatus(anyString(),anyString(),any(LotteryTicketRequest.class))).thenThrow(new NoSuchElementException());
-        this.mockMvc.perform(put("/lotteryapi/v1/status/" +id)
+        when(lotteryService.updateTicketStatus(anyString(), anyString(), any(LotteryTicketRequest.class))).thenThrow(new NoSuchElementException());
+        this.mockMvc.perform(put("/lotteryapi/v1/status/" + id)
                 .contentType(MediaType.APPLICATION_JSON)
-                .param("sortDir","asc")
+                .param("sortDir", "asc")
                 .content(mapper.writeValueAsString(request))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
+
     @Test
     public void updateTicketStatusIdDifferentUser() throws Exception {
         String id = "id1";
@@ -339,9 +341,9 @@ public class LotteryControllerTest {
         request.setUserId(userId);
 
 
-        when(lotteryService.updateTicketStatus(anyString(),anyString(),any(LotteryTicketRequest.class))).thenThrow(new AccessDeniedException("Access denied"));
-        this.mockMvc.perform(put("/lotteryapi/v1/status/" +id)
-                .param("sortDir","asc")
+        when(lotteryService.updateTicketStatus(anyString(), anyString(), any(LotteryTicketRequest.class))).thenThrow(new AccessDeniedException("Access denied"));
+        this.mockMvc.perform(put("/lotteryapi/v1/status/" + id)
+                .param("sortDir", "asc")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(request))
                 .accept(MediaType.APPLICATION_JSON))

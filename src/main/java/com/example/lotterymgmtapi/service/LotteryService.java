@@ -53,7 +53,7 @@ public class LotteryService {
 
 
     /**
-     * Save ticket lottery ticket response.
+     * Save ticket
      *
      * @param ticketRequest the ticket request
      * @return the lottery ticket response
@@ -65,7 +65,7 @@ public class LotteryService {
     }
 
     /**
-     * Update ticket lottery ticket response.
+     * Update ticket lottery
      *
      * @param id            the id
      * @param ticketRequest the ticket request
@@ -90,7 +90,7 @@ public class LotteryService {
     }
 
     /**
-     * Update ticket status lottery ticket.
+     * Update ticket status of the lottery ticket.
      *
      * @param id            the id
      * @param sortDir       the sort dir
@@ -113,7 +113,9 @@ public class LotteryService {
         return sortedTickets;
     }
 
-
+    /**
+     * Find ticket by Id
+     */
     private Optional<LotteryTicket> findTicketById(String id) {
         return lotteryRepository.findById(id);
     }
@@ -121,7 +123,7 @@ public class LotteryService {
 
     /**
      * Sort Tickets based on Sort Direction.
-     * If none specified, sorts ny descending order.
+     * If none specified, sorts by descending order.
      */
     private LotteryTicket sortTicketsByLines(LotteryTicket lotteryTicket, String sortDir) {
         List<Line> sortedLines;

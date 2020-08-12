@@ -8,6 +8,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,9 +23,11 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 @RestController
-@Api(value="Controller handles all end points related to lottery management API")
+@Api(value = "Controller handles all end points related to lottery management API")
 @RequestMapping("/lotteryapi/v1")
 public class LotteryController {
+
+    Logger logger = LoggerFactory.getLogger(LotteryController.class);
 
     @Autowired
     LotteryService lotteryService;
@@ -39,6 +43,7 @@ public class LotteryController {
         List<LotteryTicketResponse> tickets = new ArrayList<LotteryTicketResponse>();
         lotteryService.getAllTickets().forEach(tickets::add);
         if (tickets.isEmpty()) {
+            logger.info("No Lottery tickets");
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
         return new ResponseEntity<>(tickets, HttpStatus.OK);
@@ -57,6 +62,7 @@ public class LotteryController {
             LotteryTicketResponse ticketById = lotteryService.getTicketById(id);
             return new ResponseEntity<>(ticketById, HttpStatus.OK);
         } catch (NoSuchElementException e) {
+            logger.error("Lottery ticket not found in DB for id: " + id);
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
@@ -70,9 +76,11 @@ public class LotteryController {
     @PostMapping("/ticket")
     public ResponseEntity<LotteryTicketResponse> createTicket(@RequestBody LotteryTicketRequest lotteryTicketFromRequest) {
         if (!isUserIdValid(lotteryTicketFromRequest)) {
+            logger.error("Creation of lottery ticket not allowed for user: " + lotteryTicketFromRequest.getUserId());
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         if (!areLinesValid(lotteryTicketFromRequest)) {
+            logger.error("Lottery lines are invalid. Should only contain digits 0,1 and 2");
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         LotteryTicketResponse createdTicket = lotteryService.saveTicket(lotteryTicketFromRequest);
@@ -91,17 +99,21 @@ public class LotteryController {
     @PutMapping("/ticket/{id}")
     public ResponseEntity<LotteryTicketResponse> updateTicket(@PathVariable("id") String id, @RequestBody LotteryTicketRequest lotteryTicketFromRequest) {
         if (!isUserIdValid(lotteryTicketFromRequest)) {
+            logger.error("Updation of lottery ticket not allowed for user: " + id);
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         if (!areLinesValid(lotteryTicketFromRequest)) {
+            logger.error("Lottery lines are invalid. Should only contain digits 0,1 and 2");
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         try {
             LotteryTicketResponse response = lotteryService.updateTicket(id, lotteryTicketFromRequest);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (NoSuchElementException e) {
+            logger.error("Lottery ticket not found in DB for id: " + id);
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } catch (AccessDeniedException e) {
+            logger.error("Updates not possible after status check");
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
     }
@@ -119,18 +131,27 @@ public class LotteryController {
                                                             @RequestParam(value = "sortDir", required = false) String sortDir,
                                                             @RequestBody LotteryTicketRequest lotteryTicketFromRequest) {
         if (!isUserIdValid(lotteryTicketFromRequest)) {
+            logger.error("Updation of lottery ticket not allowed for user: " + id);
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         try {
             LotteryTicket updatedTicket = lotteryService.updateTicketStatus(id, sortDir, lotteryTicketFromRequest);
             return new ResponseEntity<>(updatedTicket, HttpStatus.OK);
         } catch (NoSuchElementException e) {
+            logger.error("Lottery ticket not found in DB for id: " + id);
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } catch (AccessDeniedException e) {
+            logger.error("Updates not possible after status check");
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
     }
 
+    /**
+     * Check if the userId is valid in the incoming request
+     *
+     * @param request
+     * @return the validity of userId
+     */
     private boolean isUserIdValid(LotteryTicketRequest request) {
         if (!StringUtils.isEmpty(request.getUserId())) {
             return true;
@@ -138,6 +159,12 @@ public class LotteryController {
         return false;
     }
 
+    /**
+     * Check if the lottery lines are valid. Each line should only have 3 numbers in range 0 - 2.
+     *
+     * @param request -incoming request
+     * @return if the lines are valid
+     */
     private boolean areLinesValid(LotteryTicketRequest request) {
         String pattern = "^[0-2]{3}$";
         List<String> lines = request.getLines();
